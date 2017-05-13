@@ -1,0 +1,16 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/ControllerScript.cs">
+    <Files>
+      <File FileName="Assets/Scripts/ControllerScript.cs" Line="74" Column="1" />
+      <File FileName="Assets/Scripts/VJ.cs" Line="103" Column="31" />
+      <File FileName="Assets/Scripts/CamManagerScript.cs" Line="27" Column="72" />
+      <File FileName="Assets/Scripts/TransitionScript.cs" Line="17" Column="40" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+</Properties>
