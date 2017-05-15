@@ -7,9 +7,14 @@ public class TransitionScript : MonoBehaviour
     public void ActiveController(int a_activationValue)
     {
         if (a_activationValue >= 1)
-            ControllerScript.instance.enabled = true;
+        {
+            ControllerScript.instance.m_rigidbody.constraints = RigidbodyConstraints.None;
+            ControllerScript.instance.gameObject.SetActive(true);
+        }
         else
-            ControllerScript.instance.enabled = false;
+        {
+            ControllerScript.instance.gameObject.SetActive(false);
+        }
     }
 
     public void NextTurn()
