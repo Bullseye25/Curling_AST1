@@ -9,13 +9,13 @@ public class ControllerScript : MonoBehaviour
 
     public GameObject m_fakeStone;
 
-    private LineRenderer m_arrow;
+    internal LineRenderer m_arrow;
 
     public Transform m_arrowStartingPoint;
 
     private Vector3[] m_points = new Vector3[2];
 
-    private Vector3 m_targetDir, m_dir, m_defaultCamPosition;
+    private Vector3 m_targetDir, m_dir, m_defaultStonePosition;
 
     internal MeshCollider m_collider;
 
@@ -23,9 +23,9 @@ public class ControllerScript : MonoBehaviour
 
 	internal Rigidbody m_rigidbody;
 
-    public float m_maxForce, m_minForce, m_arrowRotationSpeed, m_curlingDiraction, m_curlingForce;
+    public float m_maxForce, m_minForce, m_arrowRotationSpeed, m_curlingDiraction, m_curlingForce = 0.35f;
 
-    public bool m_useFakeStone = true, m_doCurling = false;
+    private bool m_stoneClone = true, m_doCurling = false;
 
     public Slider m_curlingSlider;
 
@@ -35,7 +35,7 @@ public class ControllerScript : MonoBehaviour
 		if (instance == null)
 			instance = this;
 
-        m_defaultCamPosition = transform.position;
+        m_defaultStonePosition = transform.position;
 
         m_brooms = GameObject.FindWithTag("Broom");
 
@@ -54,16 +54,20 @@ public class ControllerScript : MonoBehaviour
         if (!m_curlingSlider.gameObject.activeInHierarchy)
             m_curlingSlider.gameObject.SetActive(true);
 
-		m_curlingForce = 0.35f;
+        ResetCurlingForce();
 
         m_curlingSlider.value = 0;
 	}
 
+    //this function will be called every time the next turn is called
     private void OnEnable()
     {
+        //if the curling slider is not active in project
 		if (!m_curlingSlider.gameObject.activeInHierarchy)
+            //activate the slider
 			m_curlingSlider.gameObject.SetActive(true);
-        
+
+        //by default the friction will be 0 which will make the surface of the stone smooth as it can be
         m_collider.material.staticFriction = 0;
 
         //reset the rotation
@@ -80,17 +84,17 @@ public class ControllerScript : MonoBehaviour
 
         StartCoroutine(FreezeYaxis(m_rigidbody));
         
-        m_useFakeStone = true;
+        m_stoneClone = true;
 
-        m_doCurling = false;
+        Curling(false);
 
         m_collider.material.staticFriction = 0; // apply friction
 
-        m_rigidbody.useGravity = true;
+        m_rigidbody.useGravity = true;  //apply gravity
 
-        m_curlingForce = 0.35f;
+		ResetCurlingForce();    //reset curling force value
 
-		m_curlingSlider.value = 0;
+		m_curlingSlider.value = 0;  // curling slider value will be 0 by default
     }
 
     // Update is called once per frame
@@ -121,25 +125,35 @@ public class ControllerScript : MonoBehaviour
 
         CurlingBehavior();
 
-        Debug.Log("curling :" + m_doCurling);
+        //Debug.Log("curling :" + m_doCurling);
 	}
 
     private void CurlingBehavior()
     {
-		if (IsStoneMoving() && DoCurling() && (m_curlingDiraction != 0))
+		//if player decides to curl..
+		if (IsStoneMoving() && m_doCurling && (m_curlingDiraction != 0))
 		{
+            //while the stone is moving forwards with certain velocity..
             if (m_rigidbody.velocity.z >= 10)
             { 
+                //keep curling
                 m_curlingForce += Time.deltaTime; 
             }
+
+            //if the stone's velocity is below average velocity
             else
             {
-                m_curlingForce = 0.35f;
-                m_doCurling = false; 
+                //reset the curling force to normal
+				ResetCurlingForce();
+
+                //turn off curling
+                Curling(false);
             }
 
+            //following will add velocity to the xaxis which will make stone move and curl towards certain point
             m_rigidbody.velocity = new Vector3
 				(
+                    //the xaxis will curl from current point towards the point decided by the player
                     Mathf.Lerp(m_rigidbody.velocity.x, m_curlingDiraction, (m_curlingForce * Time.deltaTime)) 
                     ,
 					m_rigidbody.velocity.y
@@ -147,20 +161,29 @@ public class ControllerScript : MonoBehaviour
 					m_rigidbody.velocity.z
 				);
             
-			Debug.Log("Doing Curling");
+			//Debug.Log("Doing Curling");
 		}
     }
 
+    //following method will curl the stone according to the slider displayed on the game scene
     private void CurlingController()
     {
         m_curlingDiraction = m_curlingSlider.value;
     }
 
-    private bool DoCurling()
+    //following function will be used to activate and deactivate the curling behavior
+    private void Curling(bool a_activator)
     {
-        return m_doCurling = true;
+         m_doCurling = a_activator;
     }
 
+    //this method will reset the curling force to the default value
+    private void ResetCurlingForce()
+    {
+        m_curlingForce = 0.35f;
+    }
+
+    //to move the arrow to take target, following method will be used
 	private void ArrowController()
     {
         m_points[1] = new Vector3(VJ.instance.m_arrowImage.transform.position.x, 0.2f, VJ.instance.m_arrowImage.transform.position.z);
@@ -203,10 +226,13 @@ public class ControllerScript : MonoBehaviour
     		);
 	}
 
+    //following method will move the stone..
     private void MoveStone()
 	{
+        //if stone is not moving and target is not taken
         if (!m_rigidbody.velocity.Equals(Vector3.zero) && !Input.GetMouseButton(0))
         {
+            //target taking behavior will stay deactivated
             VJ.instance.m_takingTarget = false;
             return;
         }
@@ -215,8 +241,10 @@ public class ControllerScript : MonoBehaviour
         m_rigidbody.AddForce(Force(), ForceMode.Impulse);
     }
 
+    // following method will calculate the target taken by user and will apply force to the stone accordingly
     private Vector3 Force()
     {
+        //getting the last arrow position and adding the force
         Vector3 _force = VJ.instance.GetPosition() * m_maxForce;
 
         return new Vector3
@@ -225,36 +253,48 @@ public class ControllerScript : MonoBehaviour
                 ,
                 _force.y
 	            ,
-	            Mathf.Clamp(_force.z, m_minForce, m_maxForce)
+	            Mathf.Clamp(_force.z, m_minForce, m_maxForce) // the force will only be applyied on the forward moving diraction and will have a minimum and maximum limit
             );
     }
 
+    //this method will take the last position of the stone that is thrown and will replace will a clone of a stone which will not have player controls
     private void MakeNewStone()
     {
         Instantiate(m_fakeStone, transform.position, transform.rotation);
     }
 
+    //this method will be called when certain player is done with his/her turn..
     internal void NextTurn()
     {
-        if (m_useFakeStone)
-            MakeNewStone();
-        
+        //if the stone is not collided with the borders, in the previous turn..
+        if (m_stoneClone)
+            MakeNewStone(); // apply and replace the player stone with the clone.
+
+        //upon next turn, the target taking arrow will be activated
         m_arrow.enabled = true;
-        transform.position = m_defaultCamPosition;
+
+        transform.position = m_defaultStonePosition;
+
+        //the animated brooms will get disabled
         m_brooms.SetActive(false);
+
+        //camera position will be reset..
         CamManagerScript.instance.ResetCamPosition();
     }
 
+    //follwing is being used to check whether or not the stone is moveing forward direction
     internal bool IsStoneMoving()
     {
         return m_rigidbody.velocity.z > 0.9f;
     }
 
+    //this will check whether or not the targeting arrow is activated
     internal bool TargetingArrowActive()
     {
         return m_arrow.enabled;
     }
 
+    //following method checks the collision between two or more objects ..
     void OnCollisionEnter(Collision a_collision)
     {
         //Debug.Log(a_collision.gameObject.name);
@@ -262,45 +302,55 @@ public class ControllerScript : MonoBehaviour
         //if stone collides with a one of the borders..
         if(a_collision.gameObject.tag.Equals("ABorder"))
         {
+            //put instant stop to the stone 
             StopStone();
-            
-            m_useFakeStone = false;
 
-            //Diable the stone from the scene.
+            //do not make clone of the stone as in the previous turn the stone hit the border
+            m_stoneClone = false;
+
+            //Diable the stone from the scene..
             VJ.instance.m_takingTarget = false;
 
-			m_curlingForce = 0.35f;
+            //reset the curling force..
+			ResetCurlingForce();
         }
 
+        //if stone collides with other sotnes..
         if (a_collision.gameObject.tag.Equals("Stone") && a_collision.gameObject.GetComponent<Rigidbody>() != null)
         {
-            //turn on gravity of the stone
+            //turn on the gravity of the clone stone
             a_collision.gameObject.GetComponent<Rigidbody>().useGravity = true;
 
-            //add force to the stone on hit
+            //add force to the clone stone on hit
             a_collision.gameObject.GetComponent<Rigidbody>().AddForce(a_collision.gameObject.transform.eulerAngles * (m_maxForce * m_maxForce) , ForceMode.Impulse);
 
-            //deduct the velocity of the current player's stone by half as both stone contains the same weight..
+            //deduct the forward moving velocity of the current player's stone by half as both stone contains the same weight..
             m_rigidbody.velocity /= 2;
         }
     }
 
+    //following stops the stone from moving
     private void StopStone()
     {
 		m_rigidbody.velocity = new Vector3(m_rigidbody.velocity.x - m_rigidbody.velocity.x, m_rigidbody.velocity.y, m_rigidbody.velocity.z - m_rigidbody.velocity.z);
         m_collider.material.staticFriction = 20;
 	}
 
+    //following function also checks the collision between two or more object, but in a different manner
     void OnTriggerEnter(Collider a_collider)
     {
+        //if stone is thrown, and it passes throw certain point
         if(a_collider.gameObject.tag.Equals("StartingZone"))
         {
+            //activate the animated brooms
             m_brooms.SetActive(true);
 
-            m_doCurling = true;
+            //activate curling
+            Curling(true);
         }
     }
 
+    //following is called when there is a need of freezing certain rotation and positions of the stones
     IEnumerator FreezeYaxis(Rigidbody a_rigidbody)
     {
         yield return new WaitForSeconds(1);

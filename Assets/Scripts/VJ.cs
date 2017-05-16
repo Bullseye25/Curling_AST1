@@ -20,6 +20,8 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
 
     private Animator m_broomAnimator;
 
+    private GameObject m_home;
+
     private void Start()
     {
         if (instance == null)
@@ -32,13 +34,15 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
         m_inputVector = Vector3.zero;
 
         m_broomAnimator = ControllerScript.instance.m_brooms.GetComponent<Animator>();
+
+        m_home = GameObject.Find("Home2");
     }
 
     private void Update()
     {
         SweepingBehavior();
 
-		Debug.Log(" velocity " + ControllerScript.instance.m_rigidbody.velocity);
+		//Debug.Log(" velocity " + ControllerScript.instance.m_rigidbody.velocity);
     }
 
     private void SweepingBehavior()
@@ -55,9 +59,9 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
                 ////decrease the amount of velocity
                 ControllerScript.instance.m_rigidbody.velocity = new Vector3
                     (
-                        ControllerScript.instance.m_rigidbody.velocity.x,
+                        Mathf.Lerp(ControllerScript.instance.m_rigidbody.velocity.x, m_home.transform.position.x, ( Time.deltaTime)),
                         ControllerScript.instance.m_rigidbody.velocity.y,
-                        ControllerScript.instance.m_rigidbody.velocity.z - (m_sweepingForce * Time.deltaTime)  // decrease the forward moving velocity
+                        ControllerScript.instance.m_rigidbody.velocity.z - (m_sweepingForce * Time.deltaTime)  // reduce the friction
                     );
 
                 //ControllerScript.instance.m_rigidbody.AddForce(SetVelocity(Time.deltaTime));
@@ -85,7 +89,13 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
 
     private Vector3 SetVelocity(float z_value)
     {
-        return new Vector3(ControllerScript.instance.m_rigidbody.velocity.x, ControllerScript.instance.m_rigidbody.velocity.y, ControllerScript.instance.m_rigidbody.velocity.z - z_value);
+        
+        return new Vector3
+            (
+                ControllerScript.instance.m_rigidbody.velocity.x,
+                ControllerScript.instance.m_rigidbody.velocity.y,
+                ControllerScript.instance.m_rigidbody.velocity.z - z_value
+            );
     }
 
     public virtual void OnDrag(PointerEventData a_ped)
@@ -101,12 +111,20 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
 			pos.y = (pos.y / m_bgImg.rectTransform.sizeDelta.y);
 
             m_inputVector = new Vector3(pos.x * (3 - 1), 0, pos.y * (3 - 0));
+
+            Debug.Log("Before Adjustment: " + m_inputVector);
+
 			m_inputVector = (m_inputVector.magnitude > 1.0f) ? m_inputVector.normalized : m_inputVector;
+
+            Debug.Log("After Adjustment: " + m_inputVector);
 
 			m_arrowImage.rectTransform.anchoredPosition = new Vector3
                 (m_inputVector.x * (m_bgImg.rectTransform.sizeDelta.x / 3),
                  
-                 m_inputVector.z * 2 * (m_bgImg.rectTransform.sizeDelta.y / 3));
+                 m_inputVector.z * 2 * (m_bgImg.rectTransform.sizeDelta.y / 3)+5);
+
+            var width = ControllerScript.instance.m_arrow.bounds;
+            width.size = m_inputVector;
 		}
 	}
 
