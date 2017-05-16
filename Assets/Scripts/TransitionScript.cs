@@ -10,6 +10,7 @@ public class TransitionScript : MonoBehaviour
         {
             ControllerScript.instance.m_rigidbody.constraints = RigidbodyConstraints.None;
             ControllerScript.instance.gameObject.SetActive(true);
+            ControllerScript.instance.m_curlingForce = 0.35f;
         }
         else
         {

@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ControllerScript : MonoBehaviour 
 {
     public static ControllerScript instance = null;
 
-    public GameObject m_fakeStone, m_transitionImage;
+    public GameObject m_fakeStone;
 
     private LineRenderer m_arrow;
 
@@ -22,9 +23,11 @@ public class ControllerScript : MonoBehaviour
 
 	internal Rigidbody m_rigidbody;
 
-    public float m_force, m_arrowRotationSpeed;
+    public float m_maxForce, m_minForce, m_arrowRotationSpeed, m_curlingDiraction, m_curlingForce;
 
-    public bool m_useFakeStone = true;
+    public bool m_useFakeStone = true, m_doCurling = false;
+
+    public Slider m_curlingSlider;
 
 	// Use this for initialization
 	private void Awake()
@@ -45,15 +48,29 @@ public class ControllerScript : MonoBehaviour
         m_rigidbody = GetComponent<Rigidbody>();
 
         m_collider = GetComponent<MeshCollider>();
+
+		m_collider.material.staticFriction = 0;
+
+        if (!m_curlingSlider.gameObject.activeInHierarchy)
+            m_curlingSlider.gameObject.SetActive(true);
+
+		m_curlingForce = 0.35f;
+
+        m_curlingSlider.value = 0;
 	}
 
     private void OnEnable()
     {
+		if (!m_curlingSlider.gameObject.activeInHierarchy)
+			m_curlingSlider.gameObject.SetActive(true);
+        
+        m_collider.material.staticFriction = 0;
+
         //reset the rotation
         transform.eulerAngles = Vector3.zero;
         
         ////arrow starting point
-        Vector3 a_startingPointOfArrow = new Vector3(m_arrowStartingPoint.position.x, m_arrowStartingPoint.position.y + 1.5f, m_arrowStartingPoint.position.z);
+        Vector3 a_startingPointOfArrow = new Vector3(m_arrowStartingPoint.position.x + 0.02f, m_arrowStartingPoint.position.y, m_arrowStartingPoint.position.z);
 
         //by default the starting point and the end point of the arrow will be 0
         m_points[0] = a_startingPointOfArrow;
@@ -65,9 +82,15 @@ public class ControllerScript : MonoBehaviour
         
         m_useFakeStone = true;
 
-        m_collider.material.dynamicFriction = 0; // apply friction
+        m_doCurling = false;
+
+        m_collider.material.staticFriction = 0; // apply friction
 
         m_rigidbody.useGravity = true;
+
+        m_curlingForce = 0.35f;
+
+		m_curlingSlider.value = 0;
     }
 
     // Update is called once per frame
@@ -75,7 +98,7 @@ public class ControllerScript : MonoBehaviour
     {
         Controlls();
 
-        Debug.Log("velocity : "+ VJ.instance.GetPosition() * m_force);
+        //Debug.Log("velocity : " + Force());
 	}
 
     private void Controlls()
@@ -86,22 +109,61 @@ public class ControllerScript : MonoBehaviour
 
             Locomote();
 
+			if (m_curlingSlider.gameObject.activeInHierarchy)
+                m_curlingSlider.gameObject.SetActive(false);
+            
             m_arrow.enabled = false; //Disable the arrow after the target is taken
         }
 
 		ArrowController();
 
-        ////When Turn is over
-        if (!m_arrow.enabled && !IsStoneMoving() && !VJ.instance.IsTargetTaken()) //&& !InTransitionPhase())
-        {
-            //Move on to next turn
-            m_transitionImage.SetActive(true);
-        }
+		CurlingController();
+
+        CurlingBehavior();
+
+        Debug.Log("curling :" + m_doCurling);
 	}
+
+    private void CurlingBehavior()
+    {
+		if (IsStoneMoving() && DoCurling() && (m_curlingDiraction != 0))
+		{
+            if (m_rigidbody.velocity.z >= 10)
+            { 
+                m_curlingForce += Time.deltaTime; 
+            }
+            else
+            {
+                m_curlingForce = 0.35f;
+                m_doCurling = false; 
+            }
+
+            m_rigidbody.velocity = new Vector3
+				(
+                    Mathf.Lerp(m_rigidbody.velocity.x, m_curlingDiraction, (m_curlingForce * Time.deltaTime)) 
+                    ,
+					m_rigidbody.velocity.y
+					,
+					m_rigidbody.velocity.z
+				);
+            
+			Debug.Log("Doing Curling");
+		}
+    }
+
+    private void CurlingController()
+    {
+        m_curlingDiraction = m_curlingSlider.value;
+    }
+
+    private bool DoCurling()
+    {
+        return m_doCurling = true;
+    }
 
 	private void ArrowController()
     {
-        m_points[1] = new Vector3(VJ.instance.m_arrowImage.transform.position.x, 0.5f, VJ.instance.m_arrowImage.transform.position.z);
+        m_points[1] = new Vector3(VJ.instance.m_arrowImage.transform.position.x, 0.2f, VJ.instance.m_arrowImage.transform.position.z);
 
         m_arrow.SetPositions(m_points);
     }
@@ -150,8 +212,21 @@ public class ControllerScript : MonoBehaviour
         }
 
         //// This will give a push to the Object according to the controller
-        m_rigidbody.AddForce((VJ.instance.GetPosition() * m_force), ForceMode.Impulse);
-	
+        m_rigidbody.AddForce(Force(), ForceMode.Impulse);
+    }
+
+    private Vector3 Force()
+    {
+        Vector3 _force = VJ.instance.GetPosition() * m_maxForce;
+
+        return new Vector3
+            (
+                _force.x
+                ,
+                _force.y
+	            ,
+	            Mathf.Clamp(_force.z, m_minForce, m_maxForce)
+            );
     }
 
     private void MakeNewStone()
@@ -172,20 +247,20 @@ public class ControllerScript : MonoBehaviour
 
     internal bool IsStoneMoving()
     {
-        return m_rigidbody.velocity.z > 0;
+        return m_rigidbody.velocity.z > 0.9f;
     }
 
-    internal bool InTransitionPhase()
-    {	
-        return m_transitionImage.gameObject.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsTag("Transition");
+    internal bool TargetingArrowActive()
+    {
+        return m_arrow.enabled;
     }
 
     void OnCollisionEnter(Collision a_collision)
     {
-        Debug.Log(a_collision.gameObject.name);
+        //Debug.Log(a_collision.gameObject.name);
         
         //if stone collides with a one of the borders..
-        if(a_collision.gameObject.tag.Equals("ABorder") && IsStoneMoving())
+        if(a_collision.gameObject.tag.Equals("ABorder"))
         {
             StopStone();
             
@@ -193,6 +268,8 @@ public class ControllerScript : MonoBehaviour
 
             //Diable the stone from the scene.
             VJ.instance.m_takingTarget = false;
+
+			m_curlingForce = 0.35f;
         }
 
         if (a_collision.gameObject.tag.Equals("Stone") && a_collision.gameObject.GetComponent<Rigidbody>() != null)
@@ -201,7 +278,7 @@ public class ControllerScript : MonoBehaviour
             a_collision.gameObject.GetComponent<Rigidbody>().useGravity = true;
 
             //add force to the stone on hit
-            a_collision.gameObject.GetComponent<Rigidbody>().AddForce(a_collision.gameObject.transform.eulerAngles * (m_force * m_force) , ForceMode.Impulse);
+            a_collision.gameObject.GetComponent<Rigidbody>().AddForce(a_collision.gameObject.transform.eulerAngles * (m_maxForce * m_maxForce) , ForceMode.Impulse);
 
             //deduct the velocity of the current player's stone by half as both stone contains the same weight..
             m_rigidbody.velocity /= 2;
@@ -210,8 +287,8 @@ public class ControllerScript : MonoBehaviour
 
     private void StopStone()
     {
-		m_rigidbody.velocity = new Vector3(m_rigidbody.velocity.x, m_rigidbody.velocity.y, m_rigidbody.velocity.z);
-        m_collider.material.dynamicFriction = 20;
+		m_rigidbody.velocity = new Vector3(m_rigidbody.velocity.x - m_rigidbody.velocity.x, m_rigidbody.velocity.y, m_rigidbody.velocity.z - m_rigidbody.velocity.z);
+        m_collider.material.staticFriction = 20;
 	}
 
     void OnTriggerEnter(Collider a_collider)
@@ -219,6 +296,8 @@ public class ControllerScript : MonoBehaviour
         if(a_collider.gameObject.tag.Equals("StartingZone"))
         {
             m_brooms.SetActive(true);
+
+            m_doCurling = true;
         }
     }
 

@@ -29,7 +29,7 @@ public class CamManagerScript : MonoBehaviour
 	// LateUpdate is called after Update each frame
 	void LateUpdate()
 	{
-        if (ControllerScript.instance.IsStoneMoving()) //&& ControllerScript.instance.enabled)
+        if (ControllerScript.instance.IsStoneMoving())
 
             // Set the position of the camera's transform to be the same as the Stone's, but offset by the calculated offset distance.
             transform.position = m_stone.transform.position + m_offset;

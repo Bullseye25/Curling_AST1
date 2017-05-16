@@ -48,7 +48,9 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\CamManager.cs" />
      <Compile Include="Assets\Scripts\CamManagerScript.cs" />
+     <Compile Include="Assets\Scripts\CollisionSystem.cs" />
      <Compile Include="Assets\Scripts\ControllerScript.cs" />
+     <Compile Include="Assets\Scripts\GameManager.cs" />
      <Compile Include="Assets\Scripts\SwipeManager.cs" />
      <Compile Include="Assets\Scripts\TransitionScript.cs" />
      <Compile Include="Assets\Scripts\VJ.cs" />

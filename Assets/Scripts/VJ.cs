@@ -37,6 +37,8 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
     private void Update()
     {
         SweepingBehavior();
+
+		Debug.Log(" velocity " + ControllerScript.instance.m_rigidbody.velocity);
     }
 
     private void SweepingBehavior()
@@ -55,18 +57,21 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
                     (
                         ControllerScript.instance.m_rigidbody.velocity.x,
                         ControllerScript.instance.m_rigidbody.velocity.y,
-                        ControllerScript.instance.m_rigidbody.velocity.z - (m_sweepingForce * Time.deltaTime)   // decrease the forward moving velocity
+                        ControllerScript.instance.m_rigidbody.velocity.z - (m_sweepingForce * Time.deltaTime)  // decrease the forward moving velocity
                     );
 
-                //if the stone is too slippery
-                if (IsStoneTooSlippery())
-                {
-                    Debug.Log(ControllerScript.instance.m_collider.material.dynamicFriction);
+                //ControllerScript.instance.m_rigidbody.AddForce(SetVelocity(Time.deltaTime));
 
-                    //** decrease the friction **//
-                    //subtracting the amount to the friction will make the surface of the floor smooth 
-                    ControllerScript.instance.m_collider.material.dynamicFriction -= Time.deltaTime;
-                }
+
+				//Debug.Log("Friction:  " + ControllerScript.instance.m_collider.material.staticFriction);
+
+				////if the stone is too slippery
+				//if (IsStoneTooSlippery())
+                //{
+                //    //** decrease the friction **//
+                //    //subtracting the amount to the friction will make the surface of the floor smooth 
+                //    ControllerScript.instance.m_collider.material.staticFriction -= Time.deltaTime;
+                //}
             }
         }
 
@@ -76,6 +81,11 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
             //do not animate the brooms
             m_broomAnimator.speed = 0f;
 		}
+    }
+
+    private Vector3 SetVelocity(float z_value)
+    {
+        return new Vector3(ControllerScript.instance.m_rigidbody.velocity.x, ControllerScript.instance.m_rigidbody.velocity.y, ControllerScript.instance.m_rigidbody.velocity.z - z_value);
     }
 
     public virtual void OnDrag(PointerEventData a_ped)
@@ -90,13 +100,13 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
 			pos.x = (pos.x / m_bgImg.rectTransform.sizeDelta.x);
 			pos.y = (pos.y / m_bgImg.rectTransform.sizeDelta.y);
 
-            m_inputVector = new Vector3(pos.x * (3 - 0), 0, pos.y * (3 - 0.5f));
+            m_inputVector = new Vector3(pos.x * (3 - 1), 0, pos.y * (3 - 0));
 			m_inputVector = (m_inputVector.magnitude > 1.0f) ? m_inputVector.normalized : m_inputVector;
 
 			m_arrowImage.rectTransform.anchoredPosition = new Vector3
                 (m_inputVector.x * (m_bgImg.rectTransform.sizeDelta.x / 3),
                  
-                 m_inputVector.z * (m_bgImg.rectTransform.sizeDelta.y / 3));
+                 m_inputVector.z * 2 * (m_bgImg.rectTransform.sizeDelta.y / 3));
 		}
 	}
 
@@ -109,13 +119,11 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
 	{
         if(GetPosition().z > 0)
             m_takingTarget = true;
-
-        //StartCoroutine(ResetPointer());
 	}
 
     internal Vector3 GetPosition()
 	{
-        return new Vector3(m_inputVector.x, m_inputVector.y, Mathf.Clamp(m_inputVector.z, 0.25f, 1));
+        return m_inputVector;
 	}
 
     internal bool IsTargetTaken()
@@ -125,7 +133,7 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
 
     internal bool IsStoneTooSlippery()
     {
-        return ControllerScript.instance.m_collider.material.dynamicFriction >= 0.5f;
+        return ControllerScript.instance.m_collider.material.staticFriction >= 0.5f;
     }
 
     IEnumerator ResetPointer()
