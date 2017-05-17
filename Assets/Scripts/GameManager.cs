@@ -32,24 +32,24 @@ public class GameManager : MonoBehaviour
 
     private bool StonesMoving()
     {
-        foreach (GameObject _stone in GameObject.FindGameObjectsWithTag("Stone"))
+        foreach (GameObject _stone in GameObject.FindGameObjectsWithTag("Stone")) // get all the stones in the scene
         {
-            if(!m_stones.Contains(_stone))
-				m_stones.Add(_stone);
+            if(!m_stones.Contains(_stone))  // if certain stone is not already in the list
+				m_stones.Add(_stone);   //add that stone to the list
             
-            if(_stone.GetComponent<CollisionSystem>() != null)
+            if(_stone.GetComponent<ControllerScript>() != null) //if the stone contain player controls script
             {
-                if (_stone.GetComponent<CollisionSystem>().IsStoneMoving())
-                    return true;
+                if (_stone.GetComponent<ControllerScript>().IsStoneMoving()) //check if that stone is moving or not
+                    return true;    //if it is moving return true
                 
             }
-            else if(_stone.GetComponent<ControllerScript>() != null)
+            else //if stone does not contain player controls script..
             {
-                if (_stone.GetComponent<ControllerScript>().IsStoneMoving())
-                    return true;
+                if (_stone.GetComponent<CollisionSystem>().IsStoneMoving()) //get the collision system and chech if that stone is moving or not
+                    return true;    //return true, if stone is moving
             }
         }
 
-        return false;
+        return false;   //return false if none of the stones are moving
     }
 }

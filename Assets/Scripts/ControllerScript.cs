@@ -9,6 +9,8 @@ public class ControllerScript : MonoBehaviour
 
     public GameObject m_fakeStone;
 
+    internal Material m_arrowMaterial;
+
     internal LineRenderer m_arrow;
 
     public Transform m_arrowStartingPoint;
@@ -29,12 +31,14 @@ public class ControllerScript : MonoBehaviour
 
     public Slider m_curlingSlider;
 
+    public Color m_belowAverageSpeed, m_averageSpeed, m_aboveAverageSpeed;
+
 	// Use this for initialization
 	private void Awake()
 	{
 		if (instance == null)
 			instance = this;
-
+        
         m_defaultStonePosition = transform.position;
 
         m_brooms = GameObject.FindWithTag("Broom");
@@ -42,6 +46,8 @@ public class ControllerScript : MonoBehaviour
         m_brooms.SetActive(false);
 
         m_arrow = GetComponent<LineRenderer>();
+
+        m_arrowMaterial = m_arrow.materials[0];
 
         m_arrow.useWorldSpace = true;
 
@@ -57,6 +63,8 @@ public class ControllerScript : MonoBehaviour
         ResetCurlingForce();
 
         m_curlingSlider.value = 0;
+
+        m_arrowMaterial.SetColor("_EmissionColor", Color.black);
 	}
 
     //this function will be called every time the next turn is called
@@ -72,15 +80,8 @@ public class ControllerScript : MonoBehaviour
 
         //reset the rotation
         transform.eulerAngles = Vector3.zero;
-        
-        ////arrow starting point
-        Vector3 a_startingPointOfArrow = new Vector3(m_arrowStartingPoint.position.x + 0.02f, m_arrowStartingPoint.position.y, m_arrowStartingPoint.position.z);
 
-        //by default the starting point and the end point of the arrow will be 0
-        m_points[0] = a_startingPointOfArrow;
-
-        //arrow ending point
-		m_points[1] = transform.position * 2;
+        ResetArrow();
 
         StartCoroutine(FreezeYaxis(m_rigidbody));
         
@@ -95,6 +96,8 @@ public class ControllerScript : MonoBehaviour
 		ResetCurlingForce();    //reset curling force value
 
 		m_curlingSlider.value = 0;  // curling slider value will be 0 by default
+
+		m_arrowMaterial.SetColor("_EmissionColor", Color.black);
     }
 
     // Update is called once per frame
@@ -118,8 +121,12 @@ public class ControllerScript : MonoBehaviour
             
             m_arrow.enabled = false; //Disable the arrow after the target is taken
         }
+        else
+        {
+			ArrowController();
 
-		ArrowController();
+			//Debug.Log(m_points[0] + "  Starting Point  " + m_points[1] + "  End Point");
+        }
 
 		CurlingController();
 
@@ -184,11 +191,13 @@ public class ControllerScript : MonoBehaviour
     }
 
     //to move the arrow to take target, following method will be used
-	private void ArrowController()
+    internal void ArrowController()
     {
         m_points[1] = new Vector3(VJ.instance.m_arrowImage.transform.position.x, 0.2f, VJ.instance.m_arrowImage.transform.position.z);
 
         m_arrow.SetPositions(m_points);
+
+		UpdateArrowColor();
     }
 
 	//** following vector wil be the virtual position which will always be one step ahead of the position of the Stone,
@@ -280,6 +289,8 @@ public class ControllerScript : MonoBehaviour
 
         //camera position will be reset..
         CamManagerScript.instance.ResetCamPosition();
+    
+        ResetArrow();
     }
 
     //follwing is being used to check whether or not the stone is moveing forward direction
@@ -355,5 +366,35 @@ public class ControllerScript : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
         a_rigidbody.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
+    }
+
+    internal void ResetArrow()
+    {
+        //Debug.Log("Reset Arrow");
+
+		//by default the starting point and the end point of the arrow will be 0
+        m_points[0] = m_arrowStartingPoint.position;
+
+		//arrow ending point
+        m_points[1] = new Vector3(-0.3f, 0.2f, -15.3f);
+
+		//Debug.Log(m_points[0] + "  Starting Point  " + m_points[1] + "  End Point");
+	}
+
+    internal void UpdateArrowColor()
+    {
+        if (VJ.instance.GetPosition().z > 0 && VJ.instance.GetPosition().z < 0.7f)
+            m_arrowMaterial.SetColor("_EmissionColor", m_averageSpeed);
+        else if(VJ.instance.GetPosition().z < 0)
+            m_arrowMaterial.SetColor("_EmissionColor", m_belowAverageSpeed);
+        else if (VJ.instance.GetPosition().z >= 0.7f)
+            m_arrowMaterial.SetColor("_EmissionColor", m_aboveAverageSpeed);           
+    }
+
+    internal void ResetStoneProperties()
+    {
+		m_rigidbody.constraints = RigidbodyConstraints.None;
+		this.gameObject.SetActive(true);
+		m_curlingForce = 0.35f;
     }
 }

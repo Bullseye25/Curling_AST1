@@ -20,7 +20,14 @@ public class CollisionSystem : MonoBehaviour
         if(a_collision.gameObject.GetComponent<CollisionSystem>() != null)
         {
             // add force to the collided object
-            a_collision.gameObject.GetComponent<Rigidbody>().AddForce(a_collision.gameObject.transform.eulerAngles * (ControllerScript.instance.m_maxForce * ControllerScript.instance.m_maxForce), ForceMode.Impulse);
+            a_collision.gameObject.GetComponent<Rigidbody>().AddForce
+                       (
+                           a_collision.gameObject.transform.eulerAngles 
+                           * 
+                           (ControllerScript.instance.m_maxForce * ControllerScript.instance.m_maxForce),
+                        
+                           ForceMode.Impulse
+                          );
 
             //decrease the speed of this object
 			m_rigidbody.velocity /= 2;
