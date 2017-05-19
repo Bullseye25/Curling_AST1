@@ -12,19 +12,14 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance = null)
+        if (instance == null)
             instance = this;
     }
 	
 	// Update is called once per frame
 	void Update ()
     {
-        if(!StonesMoving() //check all stones that they are stop
-           &&
-           !ControllerScript.instance.TargetingArrowActive() //check if the targeting arrow is inactive
-           &&
-           !VJ.instance.IsTargetTaken()// check if the target is taken and the player's turn is over.
-          )
+        if(AreAnyStonesMoving())
         {
             m_transitionImage.SetActive(true); // do the transition & //Move on to next turn
 		}
@@ -41,7 +36,6 @@ public class GameManager : MonoBehaviour
             {
                 if (_stone.GetComponent<ControllerScript>().IsStoneMoving()) //check if that stone is moving or not
                     return true;    //if it is moving return true
-                
             }
             else //if stone does not contain player controls script..
             {
@@ -51,5 +45,17 @@ public class GameManager : MonoBehaviour
         }
 
         return false;   //return false if none of the stones are moving
+    }
+
+    private bool AreAnyStonesMoving()
+    {
+        return 
+            (
+                !StonesMoving() //check all stones that they are stop
+                &&
+                !ControllerScript.instance.TargetingArrowActive() //check if the targeting arrow is inactive
+                &&
+                !VJ.instance.IsTargetTaken()// check if the target is taken and the player's turn is over.
+            );
     }
 }

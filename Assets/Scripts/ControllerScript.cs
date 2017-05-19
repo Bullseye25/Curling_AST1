@@ -27,11 +27,13 @@ public class ControllerScript : MonoBehaviour
 
     public float m_maxForce, m_minForce, m_arrowRotationSpeed, m_curlingDiraction, m_curlingForce = 0.35f;
 
-    private bool m_stoneClone = true, m_doCurling = false;
+    internal bool m_stoneClone = true, m_doCurling = false;
 
     public Slider m_curlingSlider;
 
     public Color m_belowAverageSpeed, m_averageSpeed, m_aboveAverageSpeed;
+
+    internal int m_turn = 0;
 
 	// Use this for initialization
 	private void Awake()
@@ -269,8 +271,24 @@ public class ControllerScript : MonoBehaviour
     //this method will take the last position of the stone that is thrown and will replace will a clone of a stone which will not have player controls
     private void MakeNewStone()
     {
-        Instantiate(m_fakeStone, transform.position, transform.rotation);
+        string a_name;
+
+        if(IsOdd(m_turn))
+        {
+            a_name = "Stones_p2_Stone";
+        }
+        else
+        {
+			a_name = "Stones_p1_Stone";
+        }
+
+        Instantiate(m_fakeStone, transform.position, transform.rotation).name = a_name;
     }
+
+	public static bool IsOdd(int value)
+	{
+		return value % 2 != 0;
+	}
 
     //this method will be called when certain player is done with his/her turn..
     internal void NextTurn()
@@ -289,8 +307,6 @@ public class ControllerScript : MonoBehaviour
 
         //camera position will be reset..
         CamManagerScript.instance.ResetCamPosition();
-    
-        ResetArrow();
     }
 
     //follwing is being used to check whether or not the stone is moveing forward direction
