@@ -10,14 +10,16 @@ public class GameManager : MonoBehaviour
 
     public GameObject m_transitionImage;
 
-    private void Awake()
+	private void Awake()
     {
         if (instance == null)
             instance = this;
+
+        m_transitionImage.GetComponent<TransitionScript>().Awake();
     }
-	
-	// Update is called once per frame
-	void Update ()
+
+    // Update is called once per frame
+    void Update ()
     {
         if(AreAnyStonesMoving())
         {

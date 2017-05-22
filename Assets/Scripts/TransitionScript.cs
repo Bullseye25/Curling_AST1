@@ -5,7 +5,9 @@ using UnityEngine.UI;
 
 public class TransitionScript : MonoBehaviour 
 {
-	private int m_totalTurns = 8, m_turn = 0;
+    public static TransitionScript instance = null;
+
+	private int m_totalTurns = 7, m_turn = 0;
 	
     private Text m_p1Score, m_p2Score;
 
@@ -17,13 +19,28 @@ public class TransitionScript : MonoBehaviour
 
     public Transform m_house;
 
+	private List<GameObject> m_p1Stones = new List<GameObject>(), m_p2Stones = new List<GameObject>();
+
+	private int m_amountOfStones = 4;
+
+    internal void Awake()
+	{
+		if (instance == null)
+			instance = this;
+	}
+
 	void Start()
 	{
 		m_radiusSize = m_house.parent.localScale.x;
 
 		m_p1Score = GameObject.Find("_P1Score").GetComponent<Text>();
+
 		m_p2Score = GameObject.Find("_P2Score").GetComponent<Text>();
-	}
+
+        m_p1Stones = PoolingManager.instance.CreatePool(Pool.Stones_p1_Stone, m_amountOfStones);
+
+        m_p2Stones = PoolingManager.instance.CreatePool(Pool.Stones_p2_Stone, m_amountOfStones);
+    }
 
     //following mehtod will be called whenever there is a need to reset the properties of the stone
     public void ActiveController(int a_activationValue)
@@ -45,28 +62,30 @@ public class TransitionScript : MonoBehaviour
 
     public void NextTurn()
     {
-        if (m_turn < m_totalTurns)
+		if (m_turn < m_totalTurns)
         {
-            ControllerScript.instance.m_turn = m_turn;
-            
             ControllerScript.instance.NextTurn();
 
 			RemoveOneUIStone();
 
-			Debug.Log("turn  : " + m_turn);
-
             m_turn++;
+
         }
         else if (m_turn >= m_totalTurns)
         {
-            GetClosestStones();
-            CalculateScores();
-            ResetTurn();
-
-            ControllerScript.instance.m_stoneClone = false;
+			ControllerScript.instance.m_stoneClone = false;
 
 			ControllerScript.instance.NextTurn();
+            
+            GetClosestStones();
+
+            CalculateScores();
+
+            ResetTurn();
+
         }
+
+		Debug.Log("turn  : " + m_turn);
     }
 
     private void RemoveOneUIStone()
@@ -85,6 +104,8 @@ public class TransitionScript : MonoBehaviour
 		m_turn = 0;
 
         ActivateStonsUI();
+
+        list.Clear();
 	}
 
     private void ActivateStonsUI()
@@ -98,7 +119,7 @@ public class TransitionScript : MonoBehaviour
         {
             if(_stone.GetComponent<ControllerScript>() == null)
             {
-                Destroy(_stone);
+                _stone.SetActive(false);
             }
         }
     }
@@ -167,5 +188,24 @@ public class TransitionScript : MonoBehaviour
 					list.Add(_stone);
 			}
 		}
+	}
+
+	//this method will take the last position of the rolling stone that is thrown and will replace will a clone of a stone which will not have player controls
+    internal void MakeNewStone()
+	{
+        if (IsOdd())
+		{
+			PoolingManager.instance.GetActiveObject(m_p2Stones, ControllerScript.instance.transform.position);
+		}
+		else
+		{
+			PoolingManager.instance.GetActiveObject(m_p1Stones, ControllerScript.instance.transform.position);
+		}
+	}
+
+	//following method will be used to determine which turn it is..
+	internal bool IsOdd()
+	{
+        return m_turn % 2 != 0;
 	}
 }

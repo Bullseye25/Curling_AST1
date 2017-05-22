@@ -50,6 +50,7 @@
      <Compile Include="Assets\Scripts\CollisionSystem.cs" />
      <Compile Include="Assets\Scripts\ControllerScript.cs" />
      <Compile Include="Assets\Scripts\GameManager.cs" />
+     <Compile Include="Assets\Scripts\PoolingManager.cs" />
      <Compile Include="Assets\Scripts\ScoreManager.cs" />
      <Compile Include="Assets\Scripts\TransitionScript.cs" />
      <Compile Include="Assets\Scripts\VJ.cs" />

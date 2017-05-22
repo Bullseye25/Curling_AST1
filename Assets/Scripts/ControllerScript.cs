@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ControllerScript : MonoBehaviour 
+public class ControllerScript : MonoBehaviour
 {
     public static ControllerScript instance = null;
 
@@ -23,7 +23,7 @@ public class ControllerScript : MonoBehaviour
 
     internal GameObject m_brooms;
 
-	internal Rigidbody m_rigidbody;
+    internal Rigidbody m_rigidbody;
 
     public float m_maxForce, m_minForce, m_arrowRotationSpeed, m_curlingDiraction, m_curlingForce = 0.35f;
 
@@ -33,14 +33,16 @@ public class ControllerScript : MonoBehaviour
 
     public Color m_belowAverageSpeed, m_averageSpeed, m_aboveAverageSpeed;
 
-    internal int m_turn = 0;
+    public Material m_m1, m_m2;
 
-	// Use this for initialization
-	private void Awake()
-	{
-		if (instance == null)
-			instance = this;
-        
+    private Renderer m_ren;
+
+    // Use this for initialization
+    private void Awake()
+    {
+        if (instance == null)
+            instance = this;
+
         m_defaultStonePosition = transform.position;
 
         m_brooms = GameObject.FindWithTag("Broom");
@@ -57,7 +59,7 @@ public class ControllerScript : MonoBehaviour
 
         m_collider = GetComponent<MeshCollider>();
 
-		m_collider.material.staticFriction = 0;
+        m_collider.material.staticFriction = 0;
 
         if (!m_curlingSlider.gameObject.activeInHierarchy)
             m_curlingSlider.gameObject.SetActive(true);
@@ -67,7 +69,9 @@ public class ControllerScript : MonoBehaviour
         m_curlingSlider.value = 0;
 
         m_arrowMaterial.SetColor("_EmissionColor", Color.black);
-	}
+
+        m_ren = GetComponent<Renderer>();
+    }
 
     //this function will be called every time the next turn is called
     private void OnEnable()
@@ -100,7 +104,8 @@ public class ControllerScript : MonoBehaviour
 		m_curlingSlider.value = 0;  // curling slider value will be 0 by default
 
 		m_arrowMaterial.SetColor("_EmissionColor", Color.black);
-    }
+
+	}
 
     // Update is called once per frame
     void Update () 
@@ -268,34 +273,12 @@ public class ControllerScript : MonoBehaviour
             );
     }
 
-    //this method will take the last position of the stone that is thrown and will replace will a clone of a stone which will not have player controls
-    private void MakeNewStone()
-    {
-        string a_name;
-
-        if(IsOdd(m_turn))
-        {
-            a_name = "Stones_p2_Stone";
-        }
-        else
-        {
-			a_name = "Stones_p1_Stone";
-        }
-
-        Instantiate(m_fakeStone, transform.position, transform.rotation).name = a_name;
-    }
-
-	public static bool IsOdd(int value)
-	{
-		return value % 2 != 0;
-	}
-
     //this method will be called when certain player is done with his/her turn..
     internal void NextTurn()
     {
-        //if the stone is not collided with the borders, in the previous turn..
-        if (m_stoneClone)
-            MakeNewStone(); // apply and replace the player stone with the clone.
+		//if the stone is not collided with the borders, in the previous turn..
+		if (m_stoneClone)
+            TransitionScript.instance.MakeNewStone(); // apply and replace the player stone with the clone.
 
         //upon next turn, the target taking arrow will be activated
         m_arrow.enabled = true;
@@ -307,6 +290,8 @@ public class ControllerScript : MonoBehaviour
 
         //camera position will be reset..
         CamManagerScript.instance.ResetCamPosition();
+
+		ChangeMaterial();
     }
 
     //follwing is being used to check whether or not the stone is moveing forward direction
@@ -412,5 +397,21 @@ public class ControllerScript : MonoBehaviour
 		m_rigidbody.constraints = RigidbodyConstraints.None;
 		this.gameObject.SetActive(true);
 		m_curlingForce = 0.35f;
+    }
+
+    internal void ChangeMaterial()
+    {  
+        m_ren.materials = new Material[1];
+
+        if (TransitionScript.instance.IsOdd()) 
+        {
+            m_ren.material = m_m1; 
+        }
+        else 
+        {
+            m_ren.material = m_m2;
+        }
+
+        transform.GetChild(0).GetComponent<Renderer>().material = m_ren.material; //TODO: Remove This when the original model is applied
     }
 }
