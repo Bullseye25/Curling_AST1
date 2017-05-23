@@ -7,7 +7,7 @@ public class TransitionScript : MonoBehaviour
 {
     public static TransitionScript instance = null;
 
-	private int m_totalTurns = 7, m_turn = 0, m_amountOfStones = 4, m_end = 0, m_totalEnds = 10;
+	private int m_totalTurns = 7, m_turn = 0, m_amountOfStones = 4, m_end = 9, m_totalEnds = 10;
 	
     private Text m_p1TotalScore, m_p2TotalScore, m_winningTitle;
 
@@ -74,34 +74,31 @@ public class TransitionScript : MonoBehaviour
 
     public void NextTurn()
     {
-        //if (m_end < m_totalEnds)
-        //{
-            if (m_turn < m_totalTurns)
-            {
-                ControllerScript.instance.NextTurn();
+        if (m_turn < m_totalTurns)
+        {
+            ControllerScript.instance.NextTurn();
 
-                RemoveOneUIStone();
+            RemoveOneUIStone();
 
-                m_turn++;
+            m_turn++;
 
-            }
-            else if (m_turn >= m_totalTurns)
-            {
-				m_end++;
+        }
+        else if (m_turn >= m_totalTurns)
+        {
+			m_end++;
 
-                ControllerScript.instance.m_stoneClone = false;
+            ControllerScript.instance.m_stoneClone = false;
 
-                ControllerScript.instance.NextTurn();
+            ControllerScript.instance.NextTurn();
 
-                GetClosestStones();
+            GetClosestStones();
 
-                CalculateScores();
+            CalculateScores();
 
-                ResetTurn();
+            ResetTurn();
 
-                ActivateScoringPanel();
-            }
-        //}
+            ActivateScoringPanel();
+        }
     }
 
     private void RemoveOneUIStone()
@@ -178,17 +175,19 @@ public class TransitionScript : MonoBehaviour
         {
             SetScore(a_p2, m_p2TotalScore, m_p2EndScore, m_p1EndScore);
             SetWinningTitle("Player 2");
-		}
+        }
 
-        if (m_end == m_totalEnds)
+        if (m_end >= m_totalEnds)
+        {
             DiclearFinalScore(a_p1, a_p2);
+        }
     }
 
     private void DiclearFinalScore(int a_p1, int a_p2)
     {
-        int p1 = System.Int32.Parse(m_p1EndScore.ToString())+ a_p1;
+        int p1 = System.Int32.Parse(m_p1TotalScore.text) + a_p1;
 
-        int p2 = System.Int32.Parse(m_p2EndScore.ToString()) + a_p2;
+        int p2 = System.Int32.Parse(m_p2TotalScore.text) + a_p2;
 
         if(p1 > p2)
         {
@@ -290,13 +289,15 @@ public class TransitionScript : MonoBehaviour
     {
         if (m_end >= m_totalEnds)
         {
-            ClearScoreBoard(m_p1TotalScore, m_p1EndScore);
+            ClearScoreBoards(m_p1TotalScore, m_p1EndScore);
 
-            ClearScoreBoard(m_p2TotalScore, m_p2EndScore);
+            ClearScoreBoards(m_p2TotalScore, m_p2EndScore);
+
+			m_end = 0;
         }
     }
 
-    private void ClearScoreBoard(Text a_displayedScore, List<Text> a_endScoreBoard)
+    private void ClearScoreBoards(Text a_displayedScore, List<Text> a_endScoreBoard)
     {
         a_displayedScore.text = "0";
 
