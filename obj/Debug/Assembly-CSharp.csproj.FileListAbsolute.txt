@@ -37,3 +37,4 @@
 /Volumes/TS/Unity Projects/Office Work/Temp/bin/Debug/Unity.UNetWeaver.dll.mdb
 /Volumes/TS/Unity Projects/Office Work/obj/Debug/Assembly-CSharp.dll
 /Volumes/TS/Unity Projects/Office Work/obj/Debug/Assembly-CSharp.pdb
+/Volumes/TS/Unity Projects/Office Work/Temp/bin/Debug/Assembly-CSharp-firstpass.pdb

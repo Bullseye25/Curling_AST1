@@ -34,11 +34,25 @@ public class GameManager : MonoBehaviour
             if(!m_stones.Contains(_stone))  // if certain stone is not already in the list
 				m_stones.Add(_stone);   //add that stone to the list
             
-            if(_stone.GetComponent<ControllerScript>() != null) //if the stone contain player controls script
+			if(_stone.GetComponent<ControllerScript>() != null && _stone.GetComponent<ControllerScript> ().enabled) //if the stone contain player controls script
             {
-                if (_stone.GetComponent<ControllerScript>().IsStoneMoving()) //check if that stone is moving or not
-                    return true;    //if it is moving return true
+				//check if that stone is moving or not
+				if (_stone.GetComponent<ControllerScript> ().IsStoneMoving ()) 
+				{ 
+//					Debug.Log ("found Player");
+					return true;
+				}
+					
             }
+			else if(_stone.GetComponent<AISkipBehavior>() != null && _stone.GetComponent<AISkipBehavior> ().enabled) //if the stone contain player controls script
+			{
+				//check if that stone is moving or not
+				if (_stone.GetComponent<AISkipBehavior> ().IsStoneMoving ()) 
+				{ 
+//					Debug.Log ("found AI");
+					return true;
+				} 
+			}
             else //if stone does not contain player controls script..
             {
                 if (_stone.GetComponent<CollisionSystem>().IsStoneMoving()) //get the collision system and chech if that stone is moving or not
@@ -51,6 +65,10 @@ public class GameManager : MonoBehaviour
 
     private bool AreAnyStonesMoving()
     {
+		Debug.Log (StonesMoving() +" StonesMoving");
+		Debug.Log (ControllerScript.instance.TargetingArrowActive()+" TargetingArrowActive()");
+		Debug.Log (VJ.instance.IsTargetTaken()+" IsTargetTaken");
+		
         return 
             (
                 !StonesMoving() //check all stones that they are stop
@@ -60,4 +78,14 @@ public class GameManager : MonoBehaviour
                 !VJ.instance.IsTargetTaken()// check if the target is taken and the player's turn is over.
             );
     }
+
+	public void ExitButton()
+	{
+        ExitScript.EndUnityButtonTouched();
+	}
+
+	public void OnHitPause()
+	{
+//		ExitScript.PauseState ();
+	}
 }

@@ -8,6 +8,7 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
 {
     public static VJ instance = null;
 
+	[Header("Following Will Be Taken Calculated As %")]
     public float m_sweepingForce;
 
     private Image m_bgImg;
@@ -18,7 +19,7 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
 
     public bool m_takingTarget = false;
 
-    private Animator m_broomAnimator;
+	internal Animator m_broomAnimator;
 
     private GameObject m_home;
 
@@ -44,49 +45,69 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
     {
         SweepingBehavior();
             
+//		Debug.Log(" velocity " + ControllerScript.instance.m_rigidbody.velocity.z);
 
-		//Debug.Log(" velocity " + ControllerScript.instance.m_rigidbody.velocity);
+//		Debug.Log("velocity after with sweeping  :  "+ (ControllerScript.instance.m_rigidbody.velocity.z + test2).ToString());
     }
 
     private void SweepingBehavior()
     {
-        //check if user is pressing or Holding down the left mouse key or interacting on a touch screen
-        if (ControllerScript.instance.IsStoneMoving() && Input.GetMouseButton(0))
+		if (!IsPlayerTurn ())
+			return;
+		
+		if (WantsToSweep())
         {
-            //Animate Brooms
-            m_broomAnimator.speed = 1;
-
-            //if the velocity is certain level..
-            if (m_sweepingForce * Time.deltaTime < ControllerScript.instance.m_rigidbody.velocity.z)
-            {
-                ////decrease the amount of velocity
-                ControllerScript.instance.m_rigidbody.velocity = new Vector3
-                    (
-                        //ControllerScript.instance.m_rigidbody.velocity.x,
-                        Mathf.Lerp(ControllerScript.instance.m_rigidbody.velocity.x, m_home.transform.position.x, (Time.deltaTime/2)),
-                        ControllerScript.instance.m_rigidbody.velocity.y,
-
-                        Mathf.Lerp(ControllerScript.instance.m_rigidbody.velocity.z, m_home.transform.position.z, (0.001f))
-						//ControllerScript.instance.m_rigidbody.velocity.z - (m_sweepingForce * Time.deltaTime)  // reduce the friction
-					);
-            }
+			Sweep ();
         }
 
-        //if the player is not interacting..
-        else
+		//if the player is not interacting., and it's not A.I's turn
+		else
         {
             //do not animate the brooms
             m_broomAnimator.speed = 0f;
 		}
     }
 
+	private bool WantsToSweep()
+	{
+		//check if user is pressing or Holding down the left mouse key or interacting on a touch screen
+		return ControllerScript.instance.IsStoneMoving () && Input.GetMouseButton (0);
+	}
+
+	private bool IsPlayerTurn()
+	{
+		return ControllerScript.instance.enabled;
+	}
+
+	internal void Sweep()
+	{
+		//Animate Brooms
+		m_broomAnimator.speed = 1;
+
+		//if the velocity is certain level..
+		if (m_sweepingForce * Time.deltaTime < ControllerScript.instance.m_rigidbody.velocity.z)
+		{
+			float _sweepingForceInPercent = m_sweepingForce / 100;
+
+			float _calculatedSweepingForce = _sweepingForceInPercent + ControllerScript.instance.m_rigidbody.velocity.z;
+
+			////decrease the amount of velocity
+			ControllerScript.instance.m_rigidbody.velocity = new Vector3
+				(
+					Mathf.Lerp(ControllerScript.instance.m_rigidbody.velocity.x, m_home.transform.position.x, (Time.deltaTime/2)),
+					ControllerScript.instance.m_rigidbody.velocity.y,
+					_calculatedSweepingForce
+				);
+		}
+	}
+
     public virtual void OnDrag(PointerEventData a_ped)
 	{
         if (m_takingTarget)
             return;
 
-        ControllerScript.instance.m_arrow.startWidth = 6;
-        ControllerScript.instance.m_arrow.endWidth = 6;
+        ControllerScript.instance.m_arrow.startWidth = 20;
+        ControllerScript.instance.m_arrow.endWidth = 20;
 
 		Vector2 pos;
 

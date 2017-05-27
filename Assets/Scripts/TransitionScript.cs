@@ -7,7 +7,7 @@ public class TransitionScript : MonoBehaviour
 {
     public static TransitionScript instance = null;
 
-	private int m_totalTurns = 7, m_turn = 0, m_amountOfStones = 4, m_end = 9, m_totalEnds = 10;
+	private int m_turn = 0, m_totalTurns = 5, m_amountOfStones = 3, m_end = 0, m_totalEnds = 10;
 	
     private Text m_p1TotalScore, m_p2TotalScore, m_winningTitle;
 
@@ -76,6 +76,8 @@ public class TransitionScript : MonoBehaviour
     {
         if (m_turn < m_totalTurns)
         {
+			ScriptDisabler ();
+
             ControllerScript.instance.NextTurn();
 
             RemoveOneUIStone();
@@ -251,6 +253,8 @@ public class TransitionScript : MonoBehaviour
 		}
 	}
 
+	//isodd true means pl2, else pl1
+
 	//following method will be used to determine which turn it is..
 	internal bool IsOdd()
 	{
@@ -306,4 +310,28 @@ public class TransitionScript : MonoBehaviour
             a_endScoreBoard[i].text = "-";
         }
     }
+
+	private void ScriptDisabler()
+	{
+		Debug.Log ("Got Called");
+		
+		if (ControllerScript.instance.enabled == true)
+		{
+			ControllerScript.instance.enabled = false;
+
+			VJ.instance.enabled = false;
+
+			AISkipBehavior.instance.enabled = true;
+
+		}
+		else if (ControllerScript.instance.enabled == false)
+		{
+			ControllerScript.instance.enabled = true;
+
+			VJ.instance.enabled = true;
+
+			AISkipBehavior.instance.enabled = false;
+		}
+	}
+
 }

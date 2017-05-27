@@ -17,9 +17,9 @@ public class ControllerScript : MonoBehaviour
 
     private Vector3[] m_points = new Vector3[2];
 
-    private Vector3 m_targetDir, m_dir, m_defaultStonePosition;
+    private Vector3 m_targetDir, m_dir, m_defaultStonePosition, m_defaultStoneRotation;
 
-    internal MeshCollider m_collider;
+    private MeshCollider m_collider;
 
     internal GameObject m_brooms;
 
@@ -44,6 +44,8 @@ public class ControllerScript : MonoBehaviour
             instance = this;
 
         m_defaultStonePosition = transform.position;
+
+        m_defaultStoneRotation = transform.eulerAngles;
 
         m_brooms = GameObject.FindWithTag("Broom");
 
@@ -82,7 +84,7 @@ public class ControllerScript : MonoBehaviour
 			m_curlingSlider.gameObject.SetActive(true);
 
         //by default the friction will be 0 which will make the surface of the stone smooth as it can be
-        m_collider.material.staticFriction = 0;
+//        m_collider.material.staticFriction = 0;
 
         //reset the rotation
         transform.eulerAngles = Vector3.zero;
@@ -112,7 +114,7 @@ public class ControllerScript : MonoBehaviour
     {
         Controlls();
 
-        //Debug.Log("velocity : " + Force());
+//        Debug.Log("velocity : " + Force());
 	}
 
     private void Controlls()
@@ -276,6 +278,8 @@ public class ControllerScript : MonoBehaviour
     //this method will be called when certain player is done with his/her turn..
     internal void NextTurn()
     {
+//		VJ.instance.m_takingTarget = true;
+		
 		//if the stone is not collided with the borders, in the previous turn..
 		if (m_stoneClone)
             TransitionScript.instance.MakeNewStone(); // apply and replace the player stone with the clone.
@@ -374,7 +378,7 @@ public class ControllerScript : MonoBehaviour
         //Debug.Log("Reset Arrow");
 
 		//by default the starting point and the end point of the arrow will be 0
-        m_points[0] = m_arrowStartingPoint.position;
+        m_points[0] = m_arrowStartingPoint.position * 1f;
 
 		//arrow ending point
         m_points[1] = new Vector3(-0.3f, 0.2f, -15.3f);
