@@ -83,9 +83,6 @@ public class ControllerScript : MonoBehaviour
             //activate the slider
 			m_curlingSlider.gameObject.SetActive(true);
 
-        //by default the friction will be 0 which will make the surface of the stone smooth as it can be
-//        m_collider.material.staticFriction = 0;
-
         //reset the rotation
         transform.eulerAngles = Vector3.zero;
 
@@ -97,6 +94,7 @@ public class ControllerScript : MonoBehaviour
 
         Curling(false);
 
+		//by default the friction will be 0 which will make the surface of the stone smooth as it can be
         m_collider.material.staticFriction = 0; // apply friction
 
         m_rigidbody.useGravity = true;  //apply gravity
@@ -250,8 +248,9 @@ public class ControllerScript : MonoBehaviour
         //if stone is not moving and target is not taken
         if (!m_rigidbody.velocity.Equals(Vector3.zero) && !Input.GetMouseButton(0))
         {
-            //target taking behavior will stay deactivated
+			// deactivate target taking behavior
             VJ.instance.m_takingTarget = false;
+
             return;
         }
 
@@ -285,7 +284,8 @@ public class ControllerScript : MonoBehaviour
             TransitionScript.instance.MakeNewStone(); // apply and replace the player stone with the clone.
 
         //upon next turn, the target taking arrow will be activated
-        m_arrow.enabled = true;
+//		if(ControllerScript.instance.enabled)
+			m_arrow.enabled = true;
 
         transform.position = m_defaultStonePosition;
 
@@ -378,7 +378,7 @@ public class ControllerScript : MonoBehaviour
         //Debug.Log("Reset Arrow");
 
 		//by default the starting point and the end point of the arrow will be 0
-        m_points[0] = m_arrowStartingPoint.position * 1f;
+		m_points[0] = new Vector3(m_arrowStartingPoint.position.x, 0.2f, m_arrowStartingPoint.position.z);
 
 		//arrow ending point
         m_points[1] = new Vector3(-0.3f, 0.2f, -15.3f);
@@ -418,4 +418,10 @@ public class ControllerScript : MonoBehaviour
 
         transform.GetChild(0).GetComponent<Renderer>().material = m_ren.material; //TODO: Remove This when the original model is applied
     }
+
+	internal void ArrowSize(float value)
+	{
+		m_arrow.startWidth = value;
+		m_arrow.endWidth = value;
+	}
 }

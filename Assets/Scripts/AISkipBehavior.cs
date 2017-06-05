@@ -8,8 +8,7 @@ public enum SkipBehavior
     StrategicBehavior,
     CopyBehavior,
 };
-
-
+	
 public class AISkipBehavior : MonoBehaviour 
 {
 	public static AISkipBehavior instance = null;
@@ -29,6 +28,8 @@ public class AISkipBehavior : MonoBehaviour
 
 	private bool m_sweep = true;
 
+	Vector3 m_housePosition;
+
     private void Awake()
     {
         if (instance == null)
@@ -37,17 +38,24 @@ public class AISkipBehavior : MonoBehaviour
 		m_rigidbody = GetComponent<Rigidbody>();
 
 		m_collider = GetComponent<MeshCollider>();
-    }
+	}
+
+	void Start()
+	{
+		m_housePosition = TransitionScript.instance.m_house.transform.position;
+	}
 
 	void OnEnable () 
     {
 //		Debug.Log("velocity : " + Force());
 
-		m_basicForce = Random.Range (ControllerScript.instance.m_minForce, ControllerScript.instance.m_minForce + 3);
+		VJ.instance.enabled = false;	//disable virtual controller
+
+		m_basicForce = Random.Range (ControllerScript.instance.m_minForce, ControllerScript.instance.m_minForce + 1);
 
 		m_collider.material.staticFriction = 0; // apply friction
 		
-        //PickBehavior();
+//        PickBehavior();
 
 		m_rigidbody.useGravity = true;  //apply gravity
 
@@ -55,24 +63,20 @@ public class AISkipBehavior : MonoBehaviour
 
 		ControllerScript.instance.m_stoneClone = true;
 
-		StartCoroutine(BasicBehavior());
+		if(TransitionScript.instance.GetTurn() == 1)
+			StartCoroutine(BasicBehavior()); 
+		else
+			StartCoroutine(CopyBehavior()); 
 
 		VJ.instance.m_takingTarget = true;
 	}
 	
 	void Update () 
     {
-//		Debug.Log("velocity : " + Force());
-
-		if (!m_rigidbody.velocity.Equals(Vector3.zero)) //&& !Input.GetMouseButton(0))
+		if (IsStoneMoving () && IsFarFromGoal()) 
 		{
-			//target taking behavior will stay deactivated
-			VJ.instance.m_takingTarget = false;
-			return;
-		}
-		
-		if (IsStoneMoving ()) 
-		{
+			ControllerScript.instance.m_arrow.enabled = false;
+			
 			StartCoroutine (Sweeping ());
 
 			if (m_sweep)
@@ -83,14 +87,19 @@ public class AISkipBehavior : MonoBehaviour
 		else
 		{
 			VJ.instance.m_broomAnimator.speed = 0;
+		}
 
-			ControllerScript.instance.m_arrow.enabled = false;
+		if (!m_rigidbody.velocity.Equals(Vector3.zero)) //&& !Input.GetMouseButton(0))
+		{
+			//target taking behavior will stay deactivated
+			VJ.instance.m_takingTarget = false;
+			return;
 		}
 	}
 		
 	private IEnumerator Sweeping()
 	{
-		yield return new WaitForSeconds (1.0f);
+		yield return new WaitForSeconds (6.0f);
 
 		if (m_sweep)
 			m_sweep = false;
@@ -123,25 +132,102 @@ public class AISkipBehavior : MonoBehaviour
     }
 
 	IEnumerator BasicBehavior()
-    {
+	{
 		yield return new WaitForSeconds(m_aIThinkingTime);
+
+		Debug.Log ("Appling basic behavior");
+
+		//when the target is not taken
 		if (!VJ.instance.IsTargetTaken()) 
 		{       
+			//apply force to the stone
 			m_rigidbody.AddForce (Force(), ForceMode.Impulse);
-
-			VJ.instance.m_takingTarget = false;
 		}
-    }
+	}
 
+	// following will be used to apply force to the stone
 	private Vector3 Force()
 	{
 		return new Vector3 (Random.Range (-2.50f, 2.50f), 0, m_basicForce);
+	}
+		
+	IEnumerator CopyBehavior()
+	{
+		yield return new WaitForSeconds(m_aIThinkingTime);
+
+		if (!VJ.instance.IsTargetTaken()) 
+		{       
+			m_rigidbody.AddForce (AimAtTarget(), ForceMode.Impulse);
+		}
+	}
+
+	private Vector3 AimAtTarget()
+	{
+		Debug.Log ("Aim Target");
+		
+		List<GameObject> a_stones = new List<GameObject> ();
+
+		foreach (GameObject _stone in GameObject.FindGameObjectsWithTag("Stone"))
+		{
+			//getting the distance between the stone and the center of the house
+			float a_dis = Vector3.Distance(_stone.transform.position, m_housePosition);
+
+			//getting decimals..that will give the radius of the house..
+			a_dis = a_dis / 10;
+
+			// if the stone is in the radius of the house..
+			if (a_dis < TransitionScript.instance.m_radiusSize)
+			{
+				//&
+
+				//if the stone is not in the list..
+				if (!a_stones.Contains(_stone))
+				
+					//add to the list 
+					a_stones.Add(_stone);
+			}
+		}
+
+		if (a_stones.Count != 0)
+			a_stones.Sort (ByDistance);
+		else
+			return Force ();
+		
+		if (a_stones [0].name == "Stones_p2_Stone" && a_stones [1].name == "Stones_p2_Stone") 
+		{
+			Debug.Log ("no need to aim");
+			
+			return new Vector3 (a_stones[0].transform.position.x, 0, ControllerScript.instance.m_minForce - 2);
+		}
+
+//		else if (a_stones [0].name == "Stones_p2_Stone" && a_stones [1].name != "Stones_p2_Stone")
+//		{
+//			//TODO: Do Curling here
+//		}
+
+		else
+		{
+
+			Debug.Log ("need to aim");
+
+			return new Vector3 (a_stones[0].transform.position.x, 0, ControllerScript.instance.m_minForce + 2);
+		}
+
+	}
+
+	internal int ByDistance(GameObject a, GameObject b)
+	{
+		var dstToA = Vector3.Distance(m_housePosition, a.transform.position);
+
+		var dstToB = Vector3.Distance(m_housePosition, b.transform.position);
+
+		return dstToA.CompareTo(dstToB);
 	}
 
 	//following is called when there is a need of freezing certain rotation and positions of the stones
 	IEnumerator FreezeYaxis(Rigidbody a_rigidbody)
 	{
-		yield return new WaitForSeconds(0.8f);
+		yield return new WaitForSeconds(1f);
 		a_rigidbody.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionY;
 	}
 
@@ -192,9 +278,17 @@ public class AISkipBehavior : MonoBehaviour
 		return m_rigidbody.velocity.z > 0.9f;
 	}
 
-	//
-	//    private bool SceneReady()
-	//    {
-	//        return !TransitionScript.instance.gameObject.activeInHierarchy;
-	//    }
+	private bool IsFarFromGoal()
+	{
+		Vector3 m_housePosition = TransitionScript.instance.m_house.transform.position;
+		
+		Vector3 a_dis = transform.position - m_housePosition;
+
+		if(a_dis.magnitude > 40.0f)
+		{
+			return true;
+		}
+
+		return false;
+	}
 }

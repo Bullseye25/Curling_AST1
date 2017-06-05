@@ -13,7 +13,7 @@ public class TransitionScript : MonoBehaviour
 
     public List<Text> m_p1EndScore = new List<Text>(), m_p2EndScore = new List<Text>();
 
-	private float m_radiusSize;
+	internal float m_radiusSize;
 
     private List<GameObject> m_stonesInHouse = new List<GameObject>();
 
@@ -25,7 +25,7 @@ public class TransitionScript : MonoBehaviour
 
 	private List<GameObject> m_p1Stones = new List<GameObject>(), m_p2Stones = new List<GameObject>();
 
-    private GameObject m_scoringPanel;
+	private GameObject m_scoringPanel;
 
     internal void Awake()
 	{
@@ -70,6 +70,8 @@ public class TransitionScript : MonoBehaviour
             //disable the controls and the stone..
             ControllerScript.instance.gameObject.SetActive(false);
         }
+
+		ControllerScript.instance.ArrowSize (0);
     }
 
     public void NextTurn()
@@ -90,6 +92,10 @@ public class TransitionScript : MonoBehaviour
 			m_end++;
 
             ControllerScript.instance.m_stoneClone = false;
+
+			AISkipBehavior.instance.enabled = false;
+
+			ControllerScript.instance.enabled = false;
 
             ControllerScript.instance.NextTurn();
 
@@ -253,7 +259,7 @@ public class TransitionScript : MonoBehaviour
 		}
 	}
 
-	//isodd true means pl2, else pl1
+	//isodd true; means pl2, else pl1
 
 	//following method will be used to determine which turn it is..
 	internal bool IsOdd()
@@ -289,6 +295,11 @@ public class TransitionScript : MonoBehaviour
         m_scoringPanel.SetActive(true);
     }
 
+	internal bool IsScoringPanelActive()
+	{
+		return m_scoringPanel.activeInHierarchy;
+	}
+
     public void ClearScoreBoard()
     {
         if (m_end >= m_totalEnds)
@@ -313,8 +324,6 @@ public class TransitionScript : MonoBehaviour
 
 	private void ScriptDisabler()
 	{
-		Debug.Log ("Got Called");
-		
 		if (ControllerScript.instance.enabled == true)
 		{
 			ControllerScript.instance.enabled = false;
@@ -332,6 +341,11 @@ public class TransitionScript : MonoBehaviour
 
 			AISkipBehavior.instance.enabled = false;
 		}
+	}
+
+	internal int GetTurn()
+	{
+		return m_turn;
 	}
 
 }

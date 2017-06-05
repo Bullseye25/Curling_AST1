@@ -23,7 +23,9 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
 
     private GameObject m_home;
 
-    private float x = 3, y = 3, m_arrowHeight = 5, m_userInterface = 0.25f;
+    private float x = 3, y = 3, m_userInterface = 0.25f;
+
+	public float m_arrowHeight;
 
     private void Start()
     {
@@ -46,8 +48,8 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
         SweepingBehavior();
             
 //		Debug.Log(" velocity " + ControllerScript.instance.m_rigidbody.velocity.z);
-
-//		Debug.Log("velocity after with sweeping  :  "+ (ControllerScript.instance.m_rigidbody.velocity.z + test2).ToString());
+//
+//		Debug.Log("velocity after with sweeping  :  "+ (_calculatedSweepingForce).ToString());
     }
 
     private void SweepingBehavior()
@@ -103,31 +105,27 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
 
     public virtual void OnDrag(PointerEventData a_ped)
 	{
-        if (m_takingTarget)
+		if (m_takingTarget || !ControllerScript.instance.TargetingArrowActive())
             return;
 
-        ControllerScript.instance.m_arrow.startWidth = 20;
-        ControllerScript.instance.m_arrow.endWidth = 20;
+		ControllerScript.instance.ArrowSize (20);
 
 		Vector2 pos;
 
 		if (RectTransformUtility.ScreenPointToLocalPointInRectangle(m_bgImg.rectTransform, a_ped.position, a_ped.pressEventCamera, out pos))
 		{
-			pos.x = (pos.x / m_bgImg.rectTransform.sizeDelta.x);
-			pos.y = (pos.y / m_bgImg.rectTransform.sizeDelta.y + m_userInterface);
+			pos.x = (pos.x / m_bgImg.rectTransform.sizeDelta.x); //+ m_userInterface);
+			pos.y = (pos.y / m_bgImg.rectTransform.sizeDelta.y);// + m_userInterface);
 
-            m_inputVector = new Vector3(pos.x * (x - 0), 0, pos.y * (y - 0));
-
-            //Debug.Log("Before Adjustment: " + m_inputVector);
+            m_inputVector = new Vector3(pos.x * (x - 2), 0, pos.y * (y - 0));
 
 			m_inputVector = (m_inputVector.magnitude > 1.0f) ? m_inputVector.normalized : m_inputVector;
 
-            //Debug.Log("After Adjustment: " + m_inputVector);
-
 			m_arrowImage.rectTransform.anchoredPosition = new Vector3
-                (m_inputVector.x * (m_bgImg.rectTransform.sizeDelta.x / x),
+					
+				(m_inputVector.x * 2 * (m_bgImg.rectTransform.sizeDelta.x / x),
                  
-                 m_inputVector.z * 2 * (m_bgImg.rectTransform.sizeDelta.y / y) + m_arrowHeight);
+                 m_inputVector.z * 2 *(m_bgImg.rectTransform.sizeDelta.y / y) + m_arrowHeight);
 
             var width = ControllerScript.instance.m_arrow.bounds;
             width.size = m_inputVector;
@@ -141,16 +139,19 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
 
 	public virtual void OnPointerUp(PointerEventData a_ped)
 	{
-        if (GetPosition().z > 0)
-            m_takingTarget = true;
+		if (GetPosition ().z > 0) 
+		{
+			m_takingTarget = true;
 
-		ControllerScript.instance.m_arrow.startWidth = 0;
-		ControllerScript.instance.m_arrow.endWidth = 0;
+//			ControllerScript.instance.m_rigidbody.velocity = Vector3.zero;
+		}
+
+		ControllerScript.instance.ArrowSize(0);
 	}
 
     internal Vector3 GetPosition()
 	{
-        return m_inputVector;
+		return m_inputVector;
 	}
 
     internal bool IsTargetTaken()
