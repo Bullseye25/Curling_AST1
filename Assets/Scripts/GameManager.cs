@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour 
 {
@@ -9,6 +10,8 @@ public class GameManager : MonoBehaviour
     public List<GameObject> m_stones = new List<GameObject>();
 
     public GameObject m_transitionImage;
+
+	public Sprite m_sound, m_mute, m_pause, m_unpause;
 
 	private void Awake()
     {
@@ -91,5 +94,67 @@ public class GameManager : MonoBehaviour
 //		Debug.Log ("controller: "+ ControllerScript.instance.enabled);
 //		Debug.Log ("VJ: "+ VJ.instance.enabled);
 
+	}
+
+	public void OnPressAudio(Image m_image)
+	{
+		if(m_image.sprite == m_sound)
+		{
+			AudioCompiler (1,0);
+			
+			m_image.sprite = m_mute;
+		}
+		else
+		{
+			AudioCompiler (0,1);
+			
+			m_image.sprite = m_sound;
+		}
+	}
+
+	private void AudioCompiler(float a_checkTheAmountOfVolume, float a_finalizedVolumeValue)
+	{
+		foreach (AudioSource a_audio  in GameObject.FindObjectsOfType<AudioSource>())
+		{
+			if(a_audio.volume == a_checkTheAmountOfVolume)
+			{
+				a_audio.volume = a_finalizedVolumeValue;
+			}
+		}	
+	}
+
+	public void OnPressPause(Image m_image)
+	{
+		//if user press play
+		if(m_image.sprite == m_unpause)
+		{
+			//unfreeze the game
+			Time.timeScale = 1;
+
+			//enable playercontrols
+			VJ.instance.enabled = true;
+
+			//enable the curling slider
+			ControllerScript.instance.m_curlingSlider.enabled = true;
+
+			//change the icon to pause
+			m_image.sprite = m_pause;
+		}
+
+		//if user press pause
+		else
+		{
+			//freeze the game
+			Time.timeScale = 0;			
+
+			//disable the player controls
+			VJ.instance.enabled = false;
+
+			//disable the slider
+			ControllerScript.instance.m_curlingSlider.enabled = false;
+
+			//change the icon to play
+			m_image.sprite = m_unpause;
+		}
 	}
 }

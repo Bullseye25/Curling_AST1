@@ -135,7 +135,7 @@ public class AISkipBehavior : MonoBehaviour
 	{
 		yield return new WaitForSeconds(m_aIThinkingTime);
 
-		Debug.Log ("Appling basic behavior");
+//		Debug.Log ("Appling basic behavior");
 
 		//when the target is not taken
 		if (!VJ.instance.IsTargetTaken()) 
@@ -163,7 +163,7 @@ public class AISkipBehavior : MonoBehaviour
 
 	private Vector3 AimAtTarget()
 	{
-		Debug.Log ("Aim Target");
+//		Debug.Log ("Aim Target");
 		
 		List<GameObject> a_stones = new List<GameObject> ();
 
@@ -208,7 +208,7 @@ public class AISkipBehavior : MonoBehaviour
 		else
 		{
 
-			Debug.Log ("need to aim");
+//			Debug.Log ("need to aim");
 
 			return new Vector3 (a_stones[0].transform.position.x, 0, ControllerScript.instance.m_minForce + 2);
 		}
