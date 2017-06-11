@@ -103,7 +103,7 @@ public class ControllerScript : MonoBehaviour
 
 		m_curlingSlider.value = 0;  // curling slider value will be 0 by default
 
-		m_arrowMaterial.SetColor("_EmissionColor", Color.black);
+		m_arrowMaterial.SetColor("_EmissionColor", Color.blue);
 
 	}
 
