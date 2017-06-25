@@ -17,7 +17,7 @@ public class ControllerScript : MonoBehaviour
 
     private Vector3[] m_points = new Vector3[2];
 
-    private Vector3 m_targetDir, m_dir, m_defaultStonePosition, m_defaultStoneRotation;
+	private Vector3 m_targetDir, m_dir, m_defaultStonePosition; //m_defaultStoneRotation;
 
     private MeshCollider m_collider;
 
@@ -31,7 +31,7 @@ public class ControllerScript : MonoBehaviour
 
     public Slider m_curlingSlider;
 
-    public Color m_belowAverageSpeed, m_averageSpeed, m_aboveAverageSpeed;
+    public Color m_belowAverageSpeed, m_averageSpeed, m_aboveAverageSpeed, m_defaultColor;
 
     public Material m_m1, m_m2;
 
@@ -45,7 +45,7 @@ public class ControllerScript : MonoBehaviour
 
         m_defaultStonePosition = transform.position;
 
-        m_defaultStoneRotation = transform.eulerAngles;
+//        m_defaultStoneRotation = transform.eulerAngles;
 
         m_brooms = GameObject.FindWithTag("Broom");
 
@@ -73,6 +73,8 @@ public class ControllerScript : MonoBehaviour
         m_arrowMaterial.SetColor("_EmissionColor", Color.black);
 
         m_ren = GetComponent<Renderer>();
+
+		m_defaultColor = m_arrowMaterial.GetColor ("_Color");
     }
 
     //this function will be called every time the next turn is called
@@ -104,6 +106,8 @@ public class ControllerScript : MonoBehaviour
 		m_curlingSlider.value = 0;  // curling slider value will be 0 by default
 
 		m_arrowMaterial.SetColor("_EmissionColor", Color.blue);
+
+		m_arrowMaterial.SetColor("_Color", m_defaultColor);
 
 	}
 
@@ -142,7 +146,7 @@ public class ControllerScript : MonoBehaviour
         //Debug.Log("curling :" + m_doCurling);
 	}
 
-    private void CurlingBehavior()
+	internal void CurlingBehavior()
     {
 		//if player decides to curl..
 		if (IsStoneMoving() && m_doCurling && (m_curlingDiraction != 0))
@@ -200,7 +204,7 @@ public class ControllerScript : MonoBehaviour
     //to move the arrow to take target, following method will be used
     internal void ArrowController()
     {
-        m_points[1] = new Vector3(VJ.instance.m_arrowImage.transform.position.x, 0.2f, VJ.instance.m_arrowImage.transform.position.z);
+        m_points[1] = new Vector3(VJ.instance.m_arrowImage.transform.position.x, 0.58f, VJ.instance.m_arrowImage.transform.position.z);
 
         m_arrow.SetPositions(m_points);
 
@@ -378,21 +382,21 @@ public class ControllerScript : MonoBehaviour
         //Debug.Log("Reset Arrow");
 
 		//by default the starting point and the end point of the arrow will be 0
-		m_points[0] = new Vector3(m_arrowStartingPoint.position.x, 0.2f, m_arrowStartingPoint.position.z);
+		m_points[0] = new Vector3(m_arrowStartingPoint.position.x, 4f, m_arrowStartingPoint.position.z);
 
 		//arrow ending point
-        m_points[1] = new Vector3(-0.3f, 0.2f, -15.3f);
+        m_points[1] = new Vector3(-0.3f, 0.58f, -15.3f);
 
 		//Debug.Log(m_points[0] + "  Starting Point  " + m_points[1] + "  End Point");
 	}
 
     internal void UpdateArrowColor()
     {
-        if (VJ.instance.GetPosition().z > 0 && VJ.instance.GetPosition().z < 0.7f)
+        if (VJ.instance.GetPosition().z > 0 && VJ.instance.GetPosition().z < 0.6f)
             m_arrowMaterial.SetColor("_EmissionColor", m_averageSpeed);
         else if(VJ.instance.GetPosition().z < 0)
             m_arrowMaterial.SetColor("_EmissionColor", m_belowAverageSpeed);
-        else if (VJ.instance.GetPosition().z >= 0.7f)
+        else if (VJ.instance.GetPosition().z >= 0.6f)
             m_arrowMaterial.SetColor("_EmissionColor", m_aboveAverageSpeed);           
     }
 

@@ -1,12 +1,11 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/ControllerScript.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/GameManager.cs">
     <Files>
-      <File FileName="Assets/Scripts/ControllerScript.cs" Line="106" Column="56" />
-      <File FileName="Assets/Scripts/AISkipBehavior.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/TransitionScript.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/GameManager.cs" Line="156" Column="29" />
-      <File FileName="Assets/Scripts/VJ.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/ControllerScript.cs" Line="395" Column="81" />
+      <File FileName="Assets/Scripts/VJ.cs" Line="131" Column="4" />
       <File FileName="Assets/Scripts/CamManagerScript.cs" Line="1" Column="1" />
+      <File FileName="Assets/Scripts/AISkipBehavior.cs" Line="219" Column="39" />
+      <File FileName="Assets/Scripts/GameManager.cs" Line="1" Column="1" />
       <File FileName="Assets/Scripts/CollisionSystem.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>

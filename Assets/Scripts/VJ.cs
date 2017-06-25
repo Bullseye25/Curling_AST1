@@ -23,7 +23,7 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
 
     private GameObject m_home;
 
-    private float x = 3, y = 3, m_userInterface = 0.25f;
+	private float x = 3, y = 3;// m_userInterface = 0.25f;
 
 	public float m_arrowHeight;
 
@@ -128,6 +128,7 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
                  m_inputVector.z * 2 *(m_bgImg.rectTransform.sizeDelta.y / y) + m_arrowHeight);
 
             var width = ControllerScript.instance.m_arrow.bounds;
+
             width.size = m_inputVector;
 		}
 	}
@@ -142,8 +143,6 @@ public class VJ : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHa
 		if (GetPosition ().z > 0) 
 		{
 			m_takingTarget = true;
-
-//			ControllerScript.instance.m_rigidbody.velocity = Vector3.zero;
 		}
 
 		ControllerScript.instance.ArrowSize(0);

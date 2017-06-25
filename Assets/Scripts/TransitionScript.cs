@@ -174,46 +174,59 @@ public class TransitionScript : MonoBehaviour
 
     private void DisplayScores(int a_p1, int a_p2)
     {
+		//if player 1's score is greater..
         if (a_p1 > a_p2)
         {
+			//Display player one score on the scoring scene
             SetScore(a_p1, m_p1TotalScore, m_p1EndScore, m_p2EndScore);
             SetWinningTitle("Player 1");
         }
+
+		//if second player score is greater..
         else
         {
+			//Display player two score on the scoring scene
             SetScore(a_p2, m_p2TotalScore, m_p2EndScore, m_p1EndScore);
             SetWinningTitle("Player 2");
         }
 
+		//if it is the end of the game
         if (m_end >= m_totalEnds)
         {
+			//display final score
             DiclearFinalScore(a_p1, a_p2);
         }
     }
 
-    private void DiclearFinalScore(int a_p1, int a_p2)
-    {
-        int p1 = System.Int32.Parse(m_p1TotalScore.text) + a_p1;
-
-        int p2 = System.Int32.Parse(m_p2TotalScore.text) + a_p2;
-
-        if(p1 > p2)
-        {
-			m_winningTitle.text = "CONGRATULATIONS"+ "\n" + "PLAYER 1" + "\n" + "WINS" + "\n" + "MATCH";
-        }
-        else
-        {
-			m_winningTitle.text = "CONGRATULATIONS" + "\n" + "PLAYER 2" + "\n" + "WINS" + "\n" + "MATCH";
-        }
-	}
-
-    private void SetScore(int a_playerScore, Text a_totalScoringTextDisplay, List<Text> a_winnerEndScore, List<Text> a_loserEndScore)
-    {
+	private void SetScore(int a_playerScore, Text a_totalScoringTextDisplay, List<Text> a_winnerEndScore, List<Text> a_loserEndScore)
+	{
 		int playerTotalScore = System.Int32.Parse(a_totalScoringTextDisplay.text) + a_playerScore;
 		a_totalScoringTextDisplay.text = playerTotalScore.ToString();
 		a_winnerEndScore[m_end].text = a_playerScore.ToString();
-        a_winnerEndScore[a_loserEndScore.Count-1].text = playerTotalScore.ToString();
+		a_winnerEndScore[a_loserEndScore.Count-1].text = playerTotalScore.ToString();
 		a_loserEndScore[m_end].text = "0";
+	}
+
+    private void DiclearFinalScore(int a_p1, int a_p2)
+    {
+		//get the total score of player 1
+        int p1 = System.Int32.Parse(m_p1TotalScore.text) + a_p1;
+
+		//get the total score of player 2
+        int p2 = System.Int32.Parse(m_p2TotalScore.text) + a_p2;
+
+		//if the score of player 1 is greater..
+        if(p1 > p2)
+        {
+			//Display player 1 win the match
+			m_winningTitle.text = "CONGRATULATIONS"+ "\n" + "PLAYER 1" + "\n" + "WINS" + "\n" + "MATCH";
+        }
+		//if the score of player 2 is greater..
+        else
+        {
+			//Display player 2 win the match
+			m_winningTitle.text = "CONGRATULATIONS" + "\n" + "PLAYER 2" + "\n" + "WINS" + "\n" + "MATCH";
+        }
 	}
 
     private void SetWinningTitle(string a_playerID)
@@ -259,7 +272,7 @@ public class TransitionScript : MonoBehaviour
 		}
 	}
 
-	//isodd true; means pl2, else pl1
+	//NOTE: isodd true; means pl2 turn, else pl1 turn
 
 	//following method will be used to determine which turn it is..
 	internal bool IsOdd()

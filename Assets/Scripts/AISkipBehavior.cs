@@ -26,7 +26,7 @@ public class AISkipBehavior : MonoBehaviour
 
 	public float m_aIThinkingTime;
 
-	private bool m_sweep = true;
+	private bool m_sweep = true, m_curling = false;
 
 	Vector3 m_housePosition;
 
@@ -69,6 +69,12 @@ public class AISkipBehavior : MonoBehaviour
 			StartCoroutine(CopyBehavior()); 
 
 		VJ.instance.m_takingTarget = true;
+
+		Color col = new Vector4 (0,0,0,0);
+
+		ControllerScript.instance.m_arrowMaterial.SetColor("_Color", col);	// this will make sure the arrow is invisiable when AI is playing
+
+		m_curling = false;
 	}
 	
 	void Update () 
@@ -94,6 +100,13 @@ public class AISkipBehavior : MonoBehaviour
 			//target taking behavior will stay deactivated
 			VJ.instance.m_takingTarget = false;
 			return;
+		}
+
+		if (m_curling == true) 
+		{
+			ControllerScript.instance.m_curlingDiraction = AimAtTarget().x *10;
+
+			ControllerScript.instance.CurlingBehavior ();
 		}
 	}
 		
@@ -188,31 +201,34 @@ public class AISkipBehavior : MonoBehaviour
 			}
 		}
 
-		if (a_stones.Count != 0)
-			a_stones.Sort (ByDistance);
-		else
-			return Force ();
-		
-		if (a_stones [0].name == "Stones_p2_Stone" && a_stones [1].name == "Stones_p2_Stone") 
+		if (a_stones.Count >= 1)	//if the list of stone have more then two stones in it..
 		{
-			Debug.Log ("no need to aim");
-			
-			return new Vector3 (a_stones[0].transform.position.x, 0, ControllerScript.instance.m_minForce - 2);
+			a_stones.Sort (ByDistance);	//sort them by distanc
+
+			//if the first and second stone closest to the center of the house are belongs to AI..
+			if (a_stones [0].name == "Stones_p2_Stone" && a_stones [1].name == "Stones_p2_Stone") 
+			{
+				Debug.Log ("Get closer to the same stone");
+				//Try to throw current stone, closer to the stone that is in the center of the house
+				return new Vector3 (a_stones[0].transform.position.x, 0, ControllerScript.instance.m_minForce - 2);
+			}
+
+			//if one of the closest stones belongs to the player
+			else //if (a_stones [0].name == "Stones_p2_Stone" && a_stones [1].name != "Stones_p2_Stone")
+			{
+				Debug.Log ("Try to remove Player's stone");
+				
+				//do curling..
+				m_curling = true;
+
+				//Calculate Player's stone, and try to kick out that stone
+				return new Vector3 (a_stones[0].transform.position.x, 0, ControllerScript.instance.m_minForce + 2);
+			}
 		}
-
-//		else if (a_stones [0].name == "Stones_p2_Stone" && a_stones [1].name != "Stones_p2_Stone")
-//		{
-//			//TODO: Do Curling here
-//		}
-
-		else
+		else                        //else
 		{
-
-//			Debug.Log ("need to aim");
-
-			return new Vector3 (a_stones[0].transform.position.x, 0, ControllerScript.instance.m_minForce + 2);
+			return Force ();		//play the basic move
 		}
-
 	}
 
 	internal int ByDistance(GameObject a, GameObject b)
