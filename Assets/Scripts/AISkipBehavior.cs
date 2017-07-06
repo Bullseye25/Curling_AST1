@@ -63,7 +63,7 @@ public class AISkipBehavior : MonoBehaviour
 
 		ControllerScript.instance.m_stoneClone = true;
 
-		if(TransitionScript.instance.GetTurn() == 1)
+		if(TransitionScript.instance.GetTurn() >= 1)
 			StartCoroutine(BasicBehavior()); 
 		else
 			StartCoroutine(CopyBehavior()); 
